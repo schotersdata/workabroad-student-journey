@@ -24,7 +24,6 @@ Dashboard ini **tidak query BigQuery secara langsung**. Ia membaca 3 Google Shee
 | `batch` | Ringkasan per batch | 1 baris = 1 batch |
 | `student` | Data lengkap per siswa (Student Journey) | 1 baris = 1 siswa |
 
-Karena CSV publish Google Sheets tidak mengizinkan CORS, fetch dilakukan lewat fallback 3 layer (`PROXIES`): coba langsung dulu, lalu `corsproxy.io`, lalu `allorigins.win`. Kalau ketiganya gagal, tab itu akan kosong dengan pesan error di Console — ini paling sering terjadi kalau salah satu proxy publik down, bukan masalah di data.
 
 **Refresh data**: tombol "Refresh" di pojok kanan atas, atau reload halaman. Tidak ada auto-refresh berkala.
 
@@ -63,18 +62,7 @@ Sidebar kiri berubah sesuai tab aktif (lihat `buildFilters()`). Semua filter ber
 
 ## 4. Catatan Penting: Learning Plan (Link Dokumen)
 
-Ini bagian yang paling rawan kalau ada perubahan struktur data di Airtable/BigQuery — baca sebelum mengubah apapun yang berhubungan dengan dokumen.
-
-**Riwayat keputusan (penting untuk konteks):**
-1. Awalnya `learning_plan_url` diambil dari field attachment Airtable (`generate_learning_plan`). **Ini gagal** — attachment URL Airtable (domain `airtableusercontent.com`) adalah signed URL yang **expire dalam ~2 jam**. Karena sync BigQuery cuma sehari sekali, URL yang tersimpan sudah pasti expired sebelum sempat dibuka siapapun.
-2. Solusinya: pindah sumber ke kolom **`link_docs__from__3__student_profiling_`** — field lookup ke Google Drive yang linknya **permanen** (selama file tidak dihapus/sharing tidak dicabut). Field ini `ARRAY<STRING>`, kita ambil elemen **terakhir** kalau ada lebih dari satu (lihat CTE `learning_plan_cte` di §6).
-
-**Kenapa link-nya perlu dikonversi, bukan dipakai mentah:**
-Link asli dari kolom itu berformat `https://drive.google.com/uc?id=FILE_ID&export=download` — kalau dipakai langsung sebagai `href`/`src`, browser akan **langsung download**, bukan preview. Fungsi `driveEmbedUrl(url)` di JS mengekstrak `FILE_ID` dari URL (support format `uc?id=` maupun `file/d/.../view`) dan merakit ulang jadi `https://drive.google.com/file/d/FILE_ID/preview` — format ini yang aman untuk ditampilkan sebagai viewer, baik dibuka di tab baru maupun di-embed iframe.
-
-**Kenapa preview-nya dibuat sebagai toggle (klik untuk muncul), bukan auto-embed:**
-- Hindari memuat puluhan/ratusan iframe sekaligus kalau suatu saat panel detail menampilkan banyak dokumen.
-- **Bug yang sempat terjadi dan sudah diperbaiki**: iframe sempat dipasang dengan atribut `loading="lazy"`. Chrome punya heuristik yang menganggap iframe sebagai "hidden" kalau elemen itu baru saja muncul di DOM (mis. dalam overlay yang baru dibuka) — akibatnya `src` tidak langsung di-fetch dan terbaca `undefined` dari luar. **Solusi**: iframe dibuat dinamis lewat `document.createElement` di fungsi `toggleDocEmbed()`, ukuran width/height di-set dulu, `src` di-assign terakhir setelah elemen sudah terpasang penuh di DOM — dan **tanpa** `loading="lazy"`. Jangan tambahkan kembali atribut itu ke iframe ini.
+Link asli dari kolom learning plan berformat `https://drive.google.com/uc?id=FILE_ID&export=download` — kalau dipakai langsung sebagai `href`/`src`, browser akan **langsung download**, bukan preview. Fungsi `driveEmbedUrl(url)` di JS mengekstrak `FILE_ID` dari URL (support format `uc?id=` maupun `file/d/.../view`) dan merakit ulang jadi `https://drive.google.com/file/d/FILE_ID/preview` — format ini yang aman untuk ditampilkan sebagai viewer, baik dibuka di tab baru maupun di-embed iframe.
 
 **Syarat agar dokumen bisa di-preview:**
 File di Google Drive harus di-share sebagai **"Anyone with the link" (Viewer)**. Kalau file masih private, iframe akan gagal load / muncul halaman "minta akses" — ini di luar kendali kode dashboard, harus dicek manual di Drive.
@@ -99,19 +87,17 @@ CSV `student` di-generate dari satu query besar yang menggabungkan beberapa base
 - **`learning_plan_cte`** — ambil 1 link Drive terakhir dari `link_docs__from__3__student_profiling_` (base `appfahxliwrm7qrfm`), hasilnya jadi `learning_plan_url`.
 - **`interview_docrev_cte`** — ambil `jumlah_1on1_interview` dan `jumlah_docrev` dari base `appazoma85wc2rntm` (kolom asli: `_1on1_interview_from_reguler`, `_docrev_from_reguler`, tipe `INTEGER`).
 
-Detail lengkap query ada di dbt project (folder mart), bukan disertakan di sini supaya README ini tidak cepat basi setiap kali query berubah. Kalau perlu lihat versi SQL lengkap saat ini, cek riwayat percakapan dengan Claude atau langsung ke dbt repo.
-
 ---
 
 ## 7. Known Issues / Hal yang Perlu Diperhatikan
 
 - **Limit 2000 baris** di tabel Student — kalau total siswa aktif sudah mendekati angka itu, pertimbangkan menaikkan `LIMIT` atau menambah pagination asli (saat ini belum ada pagination, cuma "tampilkan semua vs sembunyikan").
 - **3 CORS proxy publik** (`corsproxy.io`, `allorigins.win`) di luar kendali kita — kalau salah satu down secara permanen, tinggal hapus dari array `PROXIES` atau ganti dengan proxy lain.
-- **Cache browser**: tidak ada cache eksplisit di dashboard ini (beda dengan `waa_leaderboard.html` yang punya `localStorage` cache 30 menit). Setiap reload = fetch ulang CSV. Kalau performa jadi masalah, bisa dipertimbangkan menambah cache serupa.
+- **Cache browser**: tidak ada cache eksplisit di dashboard ini. Setiap reload = fetch ulang CSV.
 - **Sharing Google Drive** untuk Learning Plan harus dicek manual per file — dashboard tidak bisa mendeteksi atau memperingatkan kalau sebuah file masih private.
 
 ---
 
 ## 8. Deployment
 
-Dashboard ini di-deploy sebagai static file di GitHub Pages (`vanseann.github.io`). Tidak ada build step — edit langsung file `.html`, commit, push, dan GitHub Pages akan serve versi terbaru (biasanya butuh beberapa menit + hard refresh browser untuk lihat perubahan, karena cache CDN GitHub Pages).
+Dashboard ini di-deploy sebagai static file di GitHub Pages (`schotersdata.github.io`). Tidak ada build step — edit langsung file `.html`, commit, push, dan GitHub Pages akan serve versi terbaru (biasanya butuh beberapa menit + hard refresh browser untuk lihat perubahan, karena cache CDN GitHub Pages).
