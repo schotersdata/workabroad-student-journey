@@ -3,7 +3,6 @@
 Dashboard analyst internal untuk memantau progres siswa Work Abroad Academy (WAA) — kehadiran, nilai ujian, status job offer (JO), feedback/NPS, dan persiapan kerja (interview, document review, learning plan). Single-file HTML, tidak butuh backend atau build step.
 
 **File:** `waa_student_dashboard.html`
-**Audiens:** tim Acops/SSO & ops WAA yang maintain dashboard ini.
 
 ---
 
