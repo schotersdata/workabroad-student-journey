@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAA Student Journey Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EFE8DA;--surface:#FBF7EE;--surface2:#E9E1CF;
+  --ink:#1B2A4A;--ink2:#3F4D6B;--ink3:#8C93A8;
+  --border:rgba(27,42,74,0.14);--border-md:rgba(27,42,74,0.24);
+  --stamp:#C9462C;--stamp-bg:#FBE6DF;--stamp-dk:#8F3119;
+  --teal:#127A72;--teal-bg:#DDF0EC;--teal-dk:#0A4B46;
+  --amber:#A8731A;--amber-bg:#FAEDD6;--amber-dk:#73500F;
+  --red:#A8332A;--red-bg:#F8E1DE;--red-dk:#76211B;
+  --green:#356B2E;--green-bg:#E5EFDE;--green-dk:#234A1F;
+  --gold:#92732F;--gold-bg:#F3E9CD;
+  --gray-bg:#E5E1D6;--gray-dk:#5A5648;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55;min-height:100vh;
+  background-image:radial-gradient(circle at 1px 1px, rgba(27,42,74,0.05) 1px, transparent 0);
+  background-size:18px 18px;
+}
+.disp{font-family:'Fraunces',serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+/* ── Topbar: terasa seperti header dokumen perjalanan ── */
+.topbar{background:var(--ink);color:var(--surface);display:flex;align-items:center;padding:0 22px;gap:16px;position:sticky;top:0;z-index:50;height:58px;border-bottom:3px solid var(--stamp);}
+.logo{font-family:'Fraunces',serif;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px;letter-spacing:.2px;}
+.logo-icon{width:30px;height:30px;background:var(--stamp);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.logo-sub{font-family:'Inter',sans-serif;font-size:10px;color:rgba(251,247,238,0.55);font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-left:2px;}
+.tab-nav{display:flex;gap:2px;margin-left:24px;}
+.tab-btn{padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;border-radius:20px;background:transparent;color:rgba(251,247,238,0.6);font-family:'Inter',sans-serif;transition:all .12s;letter-spacing:.02em;}
+.tab-btn:hover{background:rgba(251,247,238,0.08);color:var(--surface);}
+.tab-btn.active{background:var(--surface);border-color:var(--surface);color:var(--ink);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.last-upd{font-size:10px;color:rgba(251,247,238,0.5);font-family:'IBM Plex Mono',monospace;}
+.icon-btn{font-size:11px;font-weight:600;color:var(--ink);background:var(--surface);border:none;border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;}
+.icon-btn:hover{background:#fff;}
+
+.app-body{display:grid;grid-template-columns:248px 1fr;height:calc(100vh - 58px);overflow:hidden;}
+.sidebar{background:var(--surface);border-right:1px solid var(--border-md);padding:16px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;}
+.main{overflow-y:auto;padding:20px 24px;}
+.f-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.f-input{width:100%;padding:8px 10px;border:1.5px solid var(--border-md);border-radius:8px;background:var(--surface2);color:var(--ink);font-size:12px;font-family:'Inter',sans-serif;}
+.f-input:focus{outline:none;border-color:var(--ink);background:#fff;}
+.f-chips{display:flex;flex-direction:column;gap:3px;}
+.chip{padding:6px 10px;border-radius:7px;font-size:11px;cursor:pointer;background:var(--surface2);border:1px solid transparent;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;transition:all .1s;font-weight:500;}
+.chip:hover{border-color:var(--border-md);}
+.chip.active{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600;}
+.divider{height:1px;background:repeating-linear-gradient(90deg,var(--border-md) 0,var(--border-md) 4px,transparent 4px,transparent 8px);margin:4px 0;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-card{background:var(--surface2);border-radius:9px;padding:10px;}
+.stat-v{font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1;margin-bottom:1px;}
+.stat-l{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+
+/* ── KPI: kartu seperti stub boarding pass, gerigi/perforasi di tepi kanan ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.kpi{background:var(--surface);border:1px solid var(--border-md);border-radius:10px;padding:13px 15px;position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;background:repeating-linear-gradient(0deg,var(--stamp) 0,var(--stamp) 5px,transparent 5px,transparent 10px);opacity:.55;}
+.kpi-l{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+.kpi-v{font-family:'Fraunces',serif;font-size:28px;font-weight:600;line-height:1;letter-spacing:-.3px;color:var(--ink);}
+.kpi-s{font-size:10px;color:var(--ink2);margin-top:4px;font-weight:500;}
+.kpi-bar{height:4px;background:var(--border);border-radius:2px;margin-top:7px;overflow:hidden;}
+.kpi-fill{height:100%;border-radius:2px;background:var(--stamp);transition:width .5s;}
+
+.charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.chart-card{background:var(--surface);border:1px solid var(--border-md);border-radius:10px;padding:15px;}
+.chart-title{font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:11px;text-transform:uppercase;letter-spacing:.05em;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.bar-lbl{font-size:10px;color:var(--ink2);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
+.bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;position:relative;}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.bar-val{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--ink2);min-width:28px;text-align:right;}
+.bar-seg{height:100%;position:relative;cursor:default;}
+.chart-tooltip{position:fixed;background:var(--ink);color:var(--surface);font-size:10px;padding:6px 9px;border-radius:6px;pointer-events:none;z-index:1000;white-space:nowrap;opacity:0;transition:opacity .08s;box-shadow:0 4px 14px rgba(27,42,74,.3);}
+.chart-tooltip.show{opacity:1;}
+.chart-tooltip b{font-family:'IBM Plex Mono',monospace;}
+
+.tcard{background:var(--surface);border:1px solid var(--border-md);border-radius:10px;overflow:hidden;}
+.thead-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.ttitle{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;}
+.tcnt{font-size:10px;color:var(--ink3);font-family:'IBM Plex Mono',monospace;}
+.twrap{overflow-x:auto;max-height:calc(100vh - 400px);overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);text-align:left;padding:8px 12px;border-bottom:1.5px solid var(--border-md);position:sticky;top:0;background:var(--surface);white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:var(--ink);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);cursor:pointer;}
+
+/* ── Badge: kesan stempel/cap, bukan pill flat generik ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;border:1px solid currentColor;}
+.t1{background:var(--green-bg);color:var(--green-dk);}
+.t2{background:var(--teal-bg);color:var(--teal-dk);}
+.t3{background:var(--amber-bg);color:var(--amber-dk);}
+.t4,.t5{background:var(--red-bg);color:var(--red-dk);}
+.nps-p{background:var(--green-bg);color:var(--green-dk);}
+.nps-a{background:var(--amber-bg);color:var(--amber-dk);}
+.nps-d{background:var(--red-bg);color:var(--red-dk);}
+.jo-y{background:var(--stamp-bg);color:var(--stamp-dk);}
+.jo-n{background:var(--gray-bg);color:var(--gray-dk);border-color:transparent;}
+.lp-y{background:var(--gold-bg);color:var(--gold);}
+.lp-n{background:var(--gray-bg);color:var(--ink3);border-color:transparent;}
+
+.pct-bar{display:flex;align-items:center;gap:6px;}
+.pbar-bg{width:44px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:2px;background:var(--ink);}
+
+/* ── Panel detail student: konsep "paspor digital" dengan tepi perforasi ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(27,42,74,0.35);z-index:100;display:flex;align-items:flex-start;justify-content:flex-end;}
+.detail-panel{width:460px;height:100vh;background:var(--surface);overflow-y:auto;padding:0;display:flex;flex-direction:column;border-left:1px solid var(--border-md);}
+.dp-pass-header{background:var(--ink);color:var(--surface);padding:22px 22px 18px;position:relative;border-bottom:2px dashed rgba(251,247,238,0.3);}
+.dp-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--stamp);margin-bottom:6px;}
+.dp-close{position:absolute;top:18px;right:18px;width:26px;height:26px;background:rgba(251,247,238,0.12);border:none;border-radius:6px;cursor:pointer;font-size:13px;color:var(--surface);display:flex;align-items:center;justify-content:center;}
+.dp-name{font-family:'Fraunces',serif;font-size:20px;font-weight:600;letter-spacing:-.2px;}
+.dp-meta{font-size:11px;color:rgba(251,247,238,0.6);margin-top:4px;}
+.dp-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.dp-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dp-kc{background:var(--surface2);border-radius:9px;padding:10px 12px;}
+.dp-kl{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;font-weight:700;}
+.dp-kv{font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.2;}
+.dp-sec{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;}
+.sc-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.sc-key{font-size:10px;color:var(--ink2);width:80px;font-weight:500;}
+.sc-bg{flex:1;height:5px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.sc-fill{height:100%;border-radius:2px;background:var(--ink);}
+.sc-num{font-size:10px;font-weight:700;min-width:28px;text-align:right;font-family:'IBM Plex Mono',monospace;}
+.logbook-item{background:var(--surface2);border-radius:8px;padding:9px 11px;font-size:11px;margin-bottom:5px;}
+.empty{text-align:center;padding:50px 20px;color:var(--ink3);}
+.loading-bar{width:100%;height:3px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:20px;}
+.loading-bar-fill{height:100%;background:var(--stamp);border-radius:1px;animation:ld 1.5s ease-in-out infinite;}
+@keyframes ld{0%{width:0%;margin-left:0}50%{width:70%;margin-left:15%}100%{width:0%;margin-left:100%}}
+
+/* ── Dokumen link (Learning Plan): tombol toggle + iframe embed inline ── */
+.doc-link{display:flex;align-items:center;gap:9px;background:var(--gold-bg);border:1px solid #D9C58A;border-radius:9px;padding:10px 12px;text-decoration:none;color:var(--gold);transition:opacity .12s;cursor:pointer;width:100%;font-family:inherit;font-size:inherit;}
+.doc-link:hover{opacity:.82;}
+.doc-link-icon{width:26px;height:26px;border-radius:6px;background:var(--gold);color:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;}
+.doc-link-text{font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-link-sub{font-size:9px;color:var(--gold);opacity:.75;margin-top:1px;}
+.doc-empty{font-size:11px;color:var(--ink3);background:var(--surface2);border-radius:9px;padding:10px 12px;}
+.doc-embed-wrap{margin-top:8px;border:1px solid var(--border-md);border-radius:9px;overflow:hidden;background:var(--surface2);}
+
+/* ── Progress trio: 1on1 Interview / Document Review sebagai mini-stat ── */
+.trio-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.trio-card{background:var(--surface2);border-radius:9px;padding:10px 12px;}
+.trio-v{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--ink);}
+.trio-l{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:2px;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:3px;}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M2 16l20-7-20-7v6l14 1-14 1z"/></svg>
+    </div>
+    WAA Student Journey
+    <span class="logo-sub">Work Abroad Academy</span>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('regional')">Regional</button>
+    <button class="tab-btn" onclick="switchTab('batch')">Batch</button>
+    <button class="tab-btn" onclick="switchTab('student')">Student</button>
+  </nav>
+  <div class="topbar-right">
+    <span class="last-upd" id="lastUpd">—</span>
+    <button class="icon-btn" onclick="reloadAll()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      Refresh
+    </button>
+  </div>
+</header>
+<div class="app-body">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="mainContent">
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    <div class="empty">Memuat data...</div>
+  </main>
+</div>
+<div class="detail-overlay" id="detailOverlay" style="display:none" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+<script>
+const URLS = {
+  regional: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRi-jQsaof8eDBAktqMwPHBTnLWa6k6dclPGxJqXadwEcIQCa-kdtSPzYS_AWM3JFgT1zVDLwEFemsg/pub?gid=1100531705&single=true&output=csv',
+  batch:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIrmvLW6-YDuCiZ4yjc3_JAKhjdmSJDGKho1h87sceCPmTpsK-_i9guzRp74SVjoRL5mE_htpHVEpn/pub?gid=60027353&single=true&output=csv',
+  student:  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQM5Tf6IhPba3Bcr4rlDWFkZ_CixyF7i41bpDupnP5P3tLdkgiNr8ntBN8aXGhy_BXnWsQOO3FjxRp-/pub?gid=197355243&single=true&output=csv'
+};
+const PROXIES = [u=>u, u=>'https://corsproxy.io/?'+encodeURIComponent(u), u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)];
+
+let DATA={regional:[],batch:[],student:[]};
+let activeTab='regional';
+let filters={
+  regional:{program:'',regional:'',tier:'',search:''},
+  batch:{program:'',regional:'',tier:'',search:''},
+  student:{program:'',batch:'',tier:'',jo:'',event:'',search:''}
+};
+
+window.onload=reloadAll;
+
+async function reloadAll(){
+  setMain('<div class="loading-bar"><div class="loading-bar-fill"></div></div><div class="empty">Memuat data...</div>');
+  await Promise.all(['regional','batch','student'].map(k=>loadSheet(k)));
+  document.getElementById('lastUpd').textContent='Update '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  renderTab();
+}
+
+async function loadSheet(key){
+  // Cache-busting: tambahkan timestamp di URL supaya browser/proxy CORS tidak
+  // mengembalikan response lama yang ke-cache, meski sumber Sheets sudah di-refresh.
+  const url=URLS[key]+(URLS[key].includes('?')?'&':'?')+'_cb='+Date.now();
+  for(const proxy of PROXIES){
+    try{
+      const r=await fetch(proxy(url),{cache:'no-store'});
+      if(!r.ok) continue;
+      const t=await r.text();
+      const lines=t.trim().split('\n').length;
+      if(t && lines>1){
+        DATA[key]=parseCSV(t);
+        // Fix batch: compute tier dari avg_tier_score kalau kolom tier tidak ada
+        if(key==='batch'){
+          DATA[key]=DATA[key].map(r=>{
+            if(!r.tier && r.avg_tier_score){
+              const s=parseFloat(r.avg_tier_score);
+              r.tier = s>=85?'1 - Excellent':s>=75?'2 - Good':s>=65?'3 - Need Improvement':s>=50?'4 - At-Risk':'5 - Critical';
+            }
+            return r;
+          });
+        }
+        console.log(`[${key}] ${DATA[key].length} rows OK`);
+        return;
+      }
+    }catch(e){console.warn(`[${key}] proxy failed:`,e.message);}
+  }
+  console.error(`[${key}] FAILED - all proxies`);
+}
+
+function parseCSV(text){
+  // Parser proper: scan karakter demi karakter, bukan split per baris dulu.
+  // Ini penting karena field seperti kualitatif_feedback/list_sesi bisa
+  // mengandung newline atau koma literal di dalam tanda kutip.
+  const rows=[];
+  let row=[],cur='',inQ=false;
+  let i=0;
+  const len=text.length;
+  while(i<len){
+    const ch=text[i];
+    if(inQ){
+      if(ch==='"'){
+        if(text[i+1]==='"'){cur+='"';i+=2;continue;} // escaped quote ""
+        inQ=false;i++;continue;
+      }
+      cur+=ch;i++;continue;
+    } else {
+      if(ch==='"'){inQ=true;i++;continue;}
+      if(ch===','){row.push(cur);cur='';i++;continue;}
+      if(ch==='\r'){i++;continue;}
+      if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';i++;continue;}
+      cur+=ch;i++;continue;
+    }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  if(rows.length<2) return [];
+
+  const headers=rows[0].map(h=>h.trim().toLowerCase().replace(/\s+/g,'_'));
+  return rows.slice(1).filter(r=>r.length>1||r[0]!=='').map(vals=>{
+    const obj={};
+    headers.forEach((h,idx)=>{
+      let v=(vals[idx]!==undefined?vals[idx]:'').trim();
+      if(v===''||v==='NaN'||v==='null'||v==='None') v=null;
+      obj[h]=v;
+    });
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['regional','batch','student'][i]===tab);
+  });
+  renderTab();
+}
+function renderTab(){
+  if(activeTab==='regional') renderRegional();
+  else if(activeTab==='batch') renderBatch();
+  else renderStudent();
+}
+
+function n(v,def=0){const x=parseFloat(v);return isNaN(x)?def:x;}
+// Partial, case-insensitive match — supports exact selection from datalist or partial typing
+function matchFilter(value,filterText){
+  if(!filterText) return true;
+  if(!value) return false;
+  return value.toLowerCase().includes(filterText.toLowerCase());
+}
+function sc(v){return n(v)>0?n(v).toFixed(1):'—';}
+function avg(arr,key){const vs=arr.map(r=>n(r[key])).filter(v=>v>0);return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0;}
+function displayName(r){return r.student_name||r.searching_id||'—';}
+// Issues breakdown: NPS detractor + rating rendah + complaint (jangan digabung jadi 1 angka tanpa konteks)
+function issuesCount(r){
+  return n(r.jumlah_nps_detractor)+n(r.jumlah_rating_rendah)+n(r.jumlah_complaint);
+}
+// Daftar program during-program yang valid untuk dashboard ini (safety net kalau data BQ belum terfilter)
+const VALID_PROGRAMS=['Ausbildung (Jerman)','Tokutei Ginou (Jepang)','WA to Multiple Country - White Collar','WA to Multiple Country - Blue Collar'];
+function isValidProgram(p){
+  if(!p) return false;
+  return /ausbildung|tokutei|white collar|blue collar/i.test(p);
+}
+// Kata kunci yang menandakan batch ini POST-program (job matching, pemantapan, dll)
+// meski mengandung "Tokutei" atau "Ausbildung" di namanya
+const POST_PROGRAM_KEYWORDS=/job matching|screening|mendan|kaiwa|pemantapan|ssw|pengolahan makanan|restoran|intervention/i;
+function isDuringProgramBatch(batchName){
+  if(!batchName) return false;
+  if(POST_PROGRAM_KEYWORDS.test(batchName)) return false;
+  // FIX: sebelumnya hanya cek ausbildung/tokutei, sehingga batch Blue Collar/White Collar
+  // (dan program lain) hilang dari dropdown filter & chart meski mereka valid during-program.
+  return /ausbildung|tokutei|white collar|blue collar|gtog|unilever|english/i.test(batchName);
+}
+
+function tierBadge(t){
+  if(!t) return '<span class="badge" style="background:var(--gray-bg);color:var(--gray-dk);border-color:transparent">—</span>';
+  const raw=t.replace(/^\d\s*-\s*/,'');
+  const cls=raw.includes('Excellent')?'t1':raw.includes('Good')?'t2':raw.includes('Need')?'t3':raw.includes('Risk')?'t4':'t5';
+  return `<span class="badge ${cls}">${raw}</span>`;
+}
+function npsBadge(s){
+  if(!s) return '—';
+  return `<span class="badge ${s==='Promoter'?'nps-p':s==='Passive'?'nps-a':'nps-d'}">${s}</span>`;
+}
+function joBadge(f){
+  return f==='Dapat JO'?'<span class="badge jo-y">Dapat JO</span>':'<span class="badge jo-n">Belum JO</span>';
+}
+// Badge Learning Plan: ada/tidak ada dokumen learning plan yang sudah dibuatkan
+function lpBadge(r){
+  return r.learning_plan_url?'<span class="badge lp-y">Ada</span>':'<span class="badge lp-n">—</span>';
+}
+// Konversi link Google Drive (format apapun: uc?id=, file/d/.../view, dst) jadi
+// format /preview yang bisa di-embed via iframe tanpa memaksa download.
+function driveEmbedUrl(url,mode){
+  if(!url) return null;
+  let id=null;
+  let m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(m) id=m[1];
+  if(!id){
+    m=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if(m) id=m[1];
+  }
+  if(!id) return null;
+  // 'preview' = format viewer Google Drive (toolbar lengkap, tidak memicu download
+  // baik dibuka di tab baru maupun di-embed iframe). 'view' tersedia sebagai alternatif
+  // jika suatu saat 'preview' bermasalah untuk tipe file tertentu.
+  const suffix=mode==='view'?'/view':'/preview';
+  return `https://drive.google.com/file/d/${id}${suffix}`;
+}
+function pctBar(v){
+  const val=Math.min(n(v),100);
+  return `<div class="pct-bar"><div class="pbar-bg"><div class="pbar-fill" style="width:${val}%"></div></div><span class="mono" style="font-size:10px">${val>0?val.toFixed(1)+'%':'—'}</span></div>`;
+}
+function escTip(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function barChart(items,color='var(--ink)'){
+  const colors=Array.isArray(color)?color:null;
+  const max=Math.max(...items.map(i=>i.v),1);
+  return items.map((i,idx)=>`<div class="bar-row">
+    <span class="bar-lbl">${i.l}</span>
+    <div class="bar-bg" onmousemove="showChartTip(event,'${escTip(i.l)}: <b>${n(i.v).toFixed(Number.isInteger(i.v)?0:1)}</b>')" onmouseleave="hideChartTip()">
+      <div class="bar-fill" style="width:${(i.v/max*100).toFixed(1)}%;background:${colors?colors[idx]||colors[0]:color}"></div>
+    </div>
+    <span class="bar-val">${n(i.v)>0?n(i.v).toFixed(Number.isInteger(i.v)?0:1):0}</span>
+  </div>`).join('');
+}
+// Stacked bar chart: tiap bar punya beberapa segmen warna (mis. Promoter+Passive+Detractor dalam 1 bar per Form)
+// items: [{l:'Form #1', segments:[{v:10,color:'var(--green)'},{v:5,color:'var(--amber)'},{v:2,color:'var(--red)'}]}]
+function stackedBarChart(items){
+  const totals=items.map(i=>i.segments.reduce((s,seg)=>s+seg.v,0));
+  const max=Math.max(...totals,1);
+  return items.map((i,idx)=>{
+    const total=totals[idx];
+    const segHtml=i.segments.map(seg=>{
+      const pct=total>0?(seg.v/max*100):0;
+      const tip=escTip(`${i.l} — ${seg.label||''}: <b>${seg.v}</b>`);
+      return seg.v>0?`<div class="bar-seg" style="width:${pct.toFixed(1)}%;background:${seg.color}" onmousemove="showChartTip(event,'${tip}')" onmouseleave="hideChartTip()"></div>`:'';
+    }).join('');
+    return `<div class="bar-row">
+      <span class="bar-lbl">${i.l}</span>
+      <div class="bar-bg" style="display:flex">${segHtml}</div>
+      <span class="bar-val">${total}</span>
+    </div>`;
+  }).join('');
+}
+// Tooltip global instan: 1 elemen DOM di-reuse untuk semua bar chart,
+// posisi mengikuti mouse, muncul langsung tanpa delay (beda dgn title attribute browser)
+function showChartTip(evt,html){
+  let tip=document.getElementById('chartTooltip');
+  if(!tip){
+    tip=document.createElement('div');
+    tip.id='chartTooltip';
+    tip.className='chart-tooltip';
+    document.body.appendChild(tip);
+  }
+  tip.innerHTML=html;
+  tip.classList.add('show');
+  const x=evt.clientX+12, y=evt.clientY+12;
+  const tw=tip.offsetWidth||120;
+  tip.style.left=(x+tw>window.innerWidth?evt.clientX-tw-12:x)+'px';
+  tip.style.top=y+'px';
+}
+function hideChartTip(){
+  const tip=document.getElementById('chartTooltip');
+  if(tip) tip.classList.remove('show');
+}
+function setMain(html){document.getElementById('mainContent').innerHTML=html;}
+function setSidebar(html){
+  // Simpan fokus & posisi cursor input aktif sebelum replace innerHTML,
+  // supaya mengetik di search/filter tidak kehilangan fokus tiap re-render
+  const active=document.activeElement;
+  let restoreSelector=null, restoreCursor=null;
+  if(active&&active.tagName==='INPUT'&&document.getElementById('sidebar').contains(active)){
+    if(active.id) restoreSelector=`#${active.id}`;
+    else if(active.getAttribute('list')) restoreSelector=`input[list="${active.getAttribute('list')}"]`;
+    restoreCursor=active.selectionStart;
+  }
+  document.getElementById('sidebar').innerHTML=html;
+  if(restoreSelector){
+    const el=document.querySelector(restoreSelector);
+    if(el){el.focus();if(restoreCursor!=null)el.setSelectionRange(restoreCursor,restoreCursor);}
+  }
+}
+
+function buildFilters(opts,fkey){
+  const f=filters[fkey];
+  let html='';
+  if(opts.search!==false) html+=`<div><div class="f-label">Cari</div><input class="f-input" id="searchInput-${fkey}" value="${f.search||''}" placeholder="Ketik untuk cari..." oninput="debouncedApplyFilter('${fkey}','search',this.value)"></div>`;
+  if(opts.program){
+    const progs=[...new Set(DATA[fkey].map(r=>r.program).filter(p=>p&&isValidProgram(p)))].sort((a,b)=>a.localeCompare(b));
+    html+=searchableSelect('Program',fkey,'program',progs,f.program,'Semua program');
+  }
+  if(opts.regional){
+    const regs=[...new Set(DATA[fkey].map(r=>r.regional).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    html+=searchableSelect('Regional',fkey,'regional',regs,f.regional,'Semua regional');
+  }
+  if(opts.batch){
+    // FIX: batch options sekarang ikut filter program yang aktif — pilih Tokutei,
+    // dropdown batch otomatis hanya tampilkan batch Tokutei (bukan semua batch).
+    const baseForBatch=f.program?DATA[fkey].filter(r=>r.program===f.program):DATA[fkey];
+    const batches=[...new Set(baseForBatch.map(r=>r.batch).filter(b=>b&&isDuringProgramBatch(b)))].sort((a,b)=>a.localeCompare(b));
+    html+=searchableSelect('Batch',fkey,'batch',batches,f.batch,'Semua batch');
+  }
+  if(opts.event){
+    const events=new Set();
+    DATA.student.forEach(r=>{
+      if(r.list_sesi&&isDuringProgramBatch(r.batch))(r.list_sesi||'').split('|').forEach(s=>{const t=s.trim();if(t)events.add(t);});
+    });
+    const evList=[...events].sort((a,b)=>a.localeCompare(b));
+    html+=searchableSelect('Event / Logbook',fkey,'event',evList,f.event,'Semua event');
+  }
+  if(opts.tier){
+    const tiers=['1 - Excellent','2 - Good','3 - Need Improvement','4 - At-Risk','5 - Critical'];
+    html+=`<div class="divider"></div><div><div class="f-label">Tier</div><div class="f-chips">
+      <div class="chip${!f.tier?' active':''}" onclick="filters['${fkey}'].tier='';renderTab()">Semua</div>
+      ${tiers.map(t=>`<div class="chip${f.tier===t?' active':''}" onclick="filters['${fkey}'].tier='${t}';renderTab()">${t.replace(/^\d - /,'')}</div>`).join('')}
+    </div></div>`;
+  }
+  if(opts.jo){
+    html+=`<div class="divider"></div><div><div class="f-label">Status JO</div><div class="f-chips">
+      <div class="chip${!f.jo?' active':''}" onclick="filters['${fkey}'].jo='';renderTab()">Semua</div>
+      <div class="chip${f.jo==='Dapat JO'?' active':''}" onclick="filters['${fkey}'].jo='Dapat JO';renderTab()">Dapat JO</div>
+      <div class="chip${f.jo==='Belum JO'?' active':''}" onclick="filters['${fkey}'].jo='Belum JO';renderTab()">Belum JO</div>
+    </div></div>`;
+  }
+  if(opts.statusKelulusan){
+    const sk=['Aktif During Program','Aktif Post Program','Done Post Program'];
+    html+=`<div class="divider"></div><div><div class="f-label">Status Kelulusan</div><div class="f-chips">
+      <div class="chip${!f.statusKelulusan?' active':''}" onclick="filters['${fkey}'].statusKelulusan='';renderTab()">Semua</div>
+      ${sk.map(s=>`<div class="chip${f.statusKelulusan===s?' active':''}" onclick="filters['${fkey}'].statusKelulusan='${s}';renderTab()">${s}</div>`).join('')}
+    </div></div>`;
+  }
+  return html;
+}
+
+// Debounce: tunda render sampai user berhenti mengetik ~250ms, supaya
+// input search/filter tidak lag akibat re-render seluruh dashboard tiap keystroke
+let _debounceTimer=null;
+function debouncedApplyFilter(fkey,field,value){
+  filters[fkey][field]=value||'';
+  clearTimeout(_debounceTimer);
+  _debounceTimer=setTimeout(()=>renderTab(),250);
+}
+// Searchable combobox: input + datalist, native browser autocomplete dengan search-as-you-type
+function searchableSelect(label,fkey,field,options,current,placeholder){
+  const listId=`dl-${fkey}-${field}`;
+  const datalistOpts=options.map(o=>`<option value="${o.replace(/"/g,'&quot;')}">`).join('');
+  return `<div>
+    <div class="f-label">${label}</div>
+    <input class="f-input" list="${listId}" value="${current||''}" placeholder="${placeholder}"
+      oninput="debouncedApplyFilter('${fkey}','${field}',this.value)"
+      onchange="applySearchableFilter('${fkey}','${field}',this.value)">
+    <datalist id="${listId}">${datalistOpts}</datalist>
+  </div>`;
+}
+function applySearchableFilter(fkey,field,value){
+  clearTimeout(_debounceTimer);
+  filters[fkey][field]=value||'';
+  renderTab();
+}
+
+// ── REGIONAL ──────────────────────────────────────────────────────────────────
+function renderRegional(){
+  const f=filters.regional;
+  const data=DATA.regional.filter(r=>{
+    if(f.search&&!(r.regional||'').toLowerCase().includes(f.search.toLowerCase())) return false;
+    if(f.program&&!matchFilter(r.program,f.program)) return false;
+    if(f.regional&&!matchFilter(r.regional,f.regional)) return false;
+    if(f.tier&&(r.tier_regional||r.tier)!==f.tier) return false;
+    return true;
+  });
+  setSidebar(buildFilters({search:true,program:true,regional:true,tier:true},'regional'));
+  if(!data.length){setMain('<div class="empty">Tidak ada data regional.</div>');return;}
+
+  const totSt=data.reduce((s,r)=>s+n(r.total_student),0);
+  const totBt=data.reduce((s,r)=>s+n(r.total_batch),0);
+  const avgH=avg(data,'avg_kehadiran');
+  const avgN=avg(data,'avg_nilai_akumulasi');
+  const avgNAusR=avg(data.filter(r=>/ausbildung/i.test(r.program||'')),'avg_nilai_ausbildung');
+  const avgNTokR=avg(data.filter(r=>/tokutei/i.test(r.program||'')),'avg_nilai_tokutei');
+  const totJO=data.reduce((s,r)=>s+n(r.total_dapat_jo),0);
+
+  const kpi=`<div class="kpi-row">
+    <div class="kpi"><div class="kpi-l">Total Student</div><div class="kpi-v">${totSt.toLocaleString('id')}</div><div class="kpi-s">${data.length} regional aktif</div></div>
+    <div class="kpi"><div class="kpi-l">Total Batch</div><div class="kpi-v">${totBt.toLocaleString('id')}</div><div class="kpi-s">Batch berjalan</div></div>
+    <div class="kpi"><div class="kpi-l">Avg Kehadiran</div><div class="kpi-v">${avgH.toFixed(1)}%</div><div class="kpi-s">Semua regional</div><div class="kpi-bar"><div class="kpi-fill" style="width:${avgH}%"></div></div></div>
+    <div class="kpi"><div class="kpi-l">Avg Nilai</div><div class="kpi-v">${avgN.toFixed(1)}</div><div style="display:flex;gap:10px;margin-top:4px">
+      <div style="font-size:10px;color:var(--ink3)">Aus: <b style="color:var(--ink2)">${avgNAusR>0?avgNAusR.toFixed(1):'—'}</b></div>
+      <div style="font-size:10px;color:var(--ink3)">Tok: <b style="color:var(--ink2)">${avgNTokR>0?avgNTokR.toFixed(1):'—'}</b></div>
+    </div></div>
+    <div class="kpi"><div class="kpi-l">Dapat JO</div><div class="kpi-v">${totJO.toLocaleString('id')}</div><div class="kpi-s">${totSt>0?(totJO/totSt*100).toFixed(1)+'%':''} dari total</div></div>
+  </div>`;
+
+  const charts=`<div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Avg Kehadiran per Regional</div>${barChart([...data].sort((a,b)=>n(b.avg_kehadiran)-n(a.avg_kehadiran)).slice(0,6).map(r=>({l:r.regional||'?',v:n(r.avg_kehadiran)})))}</div>
+    <div class="chart-card"><div class="chart-title">Avg Nilai per Regional</div>${barChart([...data].sort((a,b)=>n(b.avg_nilai_akumulasi)-n(a.avg_nilai_akumulasi)).slice(0,6).map(r=>({l:r.regional||'?',v:n(r.avg_nilai_akumulasi)})),'var(--teal)')}</div>
+    <div class="chart-card"><div class="chart-title">Distribusi Tier</div>${barChart(['1 - Excellent','2 - Good','3 - Need Improvement','4 - At-Risk','5 - Critical'].map(t=>({l:t.replace(/^\d - /,''),v:data.filter(r=>(r.tier_regional||r.tier)===t).length})),'var(--stamp)')}</div>
+  </div>`;
+
+  const rows=data.map(r=>`<tr>
+    <td><b>${r.regional||'—'}</b></td><td>${r.program||'—'}</td><td>${r.skema_kelas||'—'}</td>
+    <td style="text-align:right">${n(r.total_batch)}</td><td style="text-align:right">${n(r.total_student).toLocaleString('id')}</td>
+    <td>${pctBar(r.avg_kehadiran)}</td><td class="mono">${sc(r.avg_nilai_akumulasi)}</td>
+    <td>${tierBadge(r.tier_regional||r.tier)}</td><td style="text-align:right">${n(r.total_dapat_jo)}</td>
+    <td class="mono">${sc(r.avg_mid_a1)||sc(r.avg_mid_n5)||'—'}</td>
+    <td class="mono">${sc(r.avg_final_a1)||sc(r.avg_final_n5)||'—'}</td>
+    <td class="mono" style="color:${issuesCount(r)>0?'var(--red)':'inherit'}">${issuesCount(r)||0}</td>
+  </tr>`).join('');
+
+  setMain(kpi+charts+`<div class="tcard"><div class="thead-row"><span class="ttitle">Data per Regional</span><span class="tcnt">${data.length} regional</span></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Regional</th><th>Program</th><th>Skema</th><th>Batch</th><th>Student</th>
+      <th>Kehadiran</th><th>Avg Nilai</th><th>Tier</th><th>JO</th><th>Avg Mid</th><th>Avg Final</th><th>Issues</th>
+    </tr></thead><tbody>${rows}</tbody></table></div></div>`);
+}
+
+// ── BATCH ─────────────────────────────────────────────────────────────────────
+function renderBatch(){
+  const f=filters.batch;
+  const data=DATA.batch.filter(r=>{
+    if(f.search&&!(r.batch||'').toLowerCase().includes(f.search.toLowerCase())) return false;
+    if(f.program&&!matchFilter(r.program,f.program)) return false;
+    if(f.regional&&!matchFilter(r.regional,f.regional)) return false;
+    if(f.tier&&(r.tier||'')!==f.tier) return false;
+    return true;
+  });
+  setSidebar(buildFilters({search:true,program:true,regional:true,tier:true},'batch'));
+  if(!data.length){setMain('<div class="empty">Tidak ada data batch.</div>');return;}
+
+  const totSt=data.reduce((s,r)=>s+n(r.total_student),0);
+  const avgH=avg(data,'avg_kehadiran');
+  const avgN=avg(data,'avg_nilai_akumulasi');
+
+  const jumlahDetractorB=data.reduce((s,r)=>s+n(r.jumlah_nps_detractor),0);
+  const jumlahRatingRendahB=data.reduce((s,r)=>s+n(r.jumlah_rating_rendah),0);
+  const jumlahComplaintB=data.reduce((s,r)=>s+n(r.jumlah_complaint),0);
+  const avgNAusB=avg(data.filter(r=>/ausbildung/i.test(r.program||'')),'avg_nilai_ausbildung');
+  const avgNTokB=avg(data.filter(r=>/tokutei/i.test(r.program||'')),'avg_nilai_tokutei');
+
+  const kpi=`<div class="kpi-row">
+    <div class="kpi"><div class="kpi-l">Total Batch</div><div class="kpi-v">${data.length}</div></div>
+    <div class="kpi"><div class="kpi-l">Total Student</div><div class="kpi-v">${totSt.toLocaleString('id')}</div><div class="kpi-s">Semua batch terpilih</div></div>
+    <div class="kpi"><div class="kpi-l">Avg Kehadiran</div><div class="kpi-v">${avgH.toFixed(1)}%</div><div class="kpi-s">Rata-rata antar batch</div><div class="kpi-bar"><div class="kpi-fill" style="width:${avgH}%"></div></div></div>
+    <div class="kpi"><div class="kpi-l">Avg Nilai</div><div class="kpi-v">${avgN.toFixed(1)}</div><div style="display:flex;gap:10px;margin-top:4px">
+      <div style="font-size:10px;color:var(--ink3)">Aus: <b style="color:var(--ink2)">${avgNAusB>0?avgNAusB.toFixed(1):'—'}</b></div>
+      <div style="font-size:10px;color:var(--ink3)">Tok: <b style="color:var(--ink2)">${avgNTokB>0?avgNTokB.toFixed(1):'—'}</b></div>
+    </div></div>
+    <div class="kpi"><div class="kpi-l">Feedback Perlu Perhatian</div><div style="display:flex;gap:10px;margin-top:2px">
+      <div><div class="kpi-v" style="font-size:18px;color:var(--red)">${jumlahDetractorB}</div><div style="font-size:9px;color:var(--ink3)">Detractor</div></div>
+      <div><div class="kpi-v" style="font-size:18px;color:var(--amber)">${jumlahRatingRendahB}</div><div style="font-size:9px;color:var(--ink3)">Rating Rendah</div></div>
+      <div><div class="kpi-v" style="font-size:18px;color:var(--red)">${jumlahComplaintB}</div><div style="font-size:9px;color:var(--ink3)">Complaint</div></div>
+    </div></div>
+  </div>`;
+
+  const chartData=data.filter(r=>isDuringProgramBatch(r.batch)); // sembunyikan post-program dari chart/tabel visual
+
+  const charts=`<div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Top 5 Batch (Student)</div>${barChart([...chartData].sort((a,b)=>n(b.total_student)-n(a.total_student)).slice(0,5).map(r=>({l:(r.batch||''),v:n(r.total_student)})))}</div>
+    <div class="chart-card"><div class="chart-title">Avg Kehadiran (Top 6)</div>${barChart([...chartData].sort((a,b)=>n(b.avg_kehadiran)-n(a.avg_kehadiran)).slice(0,6).map(r=>({l:(r.batch||''),v:n(r.avg_kehadiran)})),'var(--teal)')}</div>
+    <div class="chart-card"><div class="chart-title">Distribusi Tier</div>${barChart([
+      {l:'Excellent',v:data.reduce((s,r)=>s+n(r.tier_1_excellent),0)},
+      {l:'Good',v:data.reduce((s,r)=>s+n(r.tier_2_good),0)},
+      {l:'Need Improvement',v:data.reduce((s,r)=>s+n(r.tier_3_need_improvement),0)},
+      {l:'At-Risk',v:data.reduce((s,r)=>s+n(r.tier_4_at_risk),0)},
+      {l:'Critical',v:data.reduce((s,r)=>s+n(r.tier_5_critical),0)},
+    ],'var(--stamp)')}</div>
+  </div>`;
+
+  const rows=data.map((r,i)=>`<tr onclick="openBatchDetail(${i})">
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${r.batch||''}">${(r.batch||'—').substring(0,28)}${(r.batch||'').length>28?'…':''}</td>
+    <td>${r.program||'—'}</td><td>${r.regional||'—'}</td>
+    <td style="text-align:right">${n(r.total_student)}</td>
+    <td>${pctBar(r.avg_kehadiran)}</td>
+    <td class="mono">${sc(r.avg_nilai_akumulasi)}</td>
+    <td>${tierBadge(r.tier||r.tier_regional)}</td>
+    <td style="text-align:right" class="mono">${n(r.partisipan_mid_a1)||n(r.partisipan_mid_n5)||'—'}</td>
+    <td style="text-align:right" class="mono">${n(r.partisipan_final_a1)||n(r.partisipan_final_n5)||'—'}</td>
+    <td class="mono" style="color:${issuesCount(r)>0?'var(--red)':'inherit'}">${issuesCount(r)||0}</td>
+    <td>${joBadge(n(r.total_dapat_jo)>0?'Dapat JO':'Belum JO')}</td>
+  </tr>`).join('');
+
+  window._batchData=data;
+  setMain(kpi+charts+`<div class="tcard"><div class="thead-row"><span class="ttitle">Data per Batch</span><span class="tcnt">${data.length} batch</span></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Batch</th><th>Program</th><th>Regional</th><th>Student</th>
+      <th>Kehadiran</th><th>Avg Nilai</th><th>Tier</th><th>Part. Mid</th><th>Part. Final</th><th>Issues</th><th>JO</th>
+    </tr></thead><tbody>${rows}</tbody></table></div></div>`);
+}
+
+function openBatchDetail(i){
+  const r=window._batchData[i];if(!r)return;
+  const aus=n(r.avg_mid_a1)>0||n(r.avg_final_a1)>0;
+  const tok=n(r.avg_mid_n5)>0||n(r.avg_final_n5)>0;
+  document.getElementById('detailPanel').innerHTML=`
+    <div class="dp-pass-header">
+      <div class="dp-eyebrow">Batch Record</div>
+      <div class="dp-name">${r.batch||'—'}</div>
+      <div class="dp-meta">${r.program||''} · ${r.regional||''} · ${r.skema_kelas||''}</div>
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-body">
+    <div class="dp-kpi">
+      <div class="dp-kc"><div class="dp-kl">Total Student</div><div class="dp-kv">${n(r.total_student)}</div></div>
+      <div class="dp-kc"><div class="dp-kl">Avg Kehadiran</div><div class="dp-kv">${sc(r.avg_kehadiran)}%</div></div>
+      <div class="dp-kc"><div class="dp-kl">Avg Nilai</div><div class="dp-kv">${sc(r.avg_nilai_akumulasi)}</div></div>
+      <div class="dp-kc"><div class="dp-kl">Tier</div><div class="dp-kv" style="font-size:13px;margin-top:4px">${tierBadge(r.tier)}</div></div>
+    </div>
+    ${aus?`<div class="dp-sec">Nilai Ausbildung</div>${[['Mid A1','avg_mid_a1'],['Final A1','avg_final_a1'],['Mid A2','avg_mid_a2'],['Final A2','avg_final_a2'],['Mid B1','avg_mid_b1'],['Final B1','avg_final_b1']].filter(([l,k])=>n(r[k])>0).map(([l,k])=>`<div class="sc-row"><span class="sc-key">${l}</span><div class="sc-bg"><div class="sc-fill" style="width:${n(r[k])}%"></div></div><span class="sc-num">${sc(r[k])}</span></div>`).join('')}`:''}
+    ${tok?`<div class="dp-sec" style="margin-top:8px">Nilai Tokutei</div>${[['Mid N5','avg_mid_n5'],['Final N5','avg_final_n5'],['Mid N4','avg_mid_n4'],['Final N4','avg_final_n4']].filter(([l,k])=>n(r[k])>0).map(([l,k])=>`<div class="sc-row"><span class="sc-key">${l}</span><div class="sc-bg"><div class="sc-fill" style="width:${n(r[k])}%;background:var(--teal)"></div></div><span class="sc-num">${sc(r[k])}</span></div>`).join('')}`:''}
+    <div class="dp-sec" style="margin-top:8px">Partisipan Ujian</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px">${[['Mid A1','partisipan_mid_a1'],['Final A1','partisipan_final_a1'],['Mid N5','partisipan_mid_n5'],['Final N5','partisipan_final_n5'],['Mid N4','partisipan_mid_n4'],['Final N4','partisipan_final_n4']].filter(([l,k])=>n(r[k])>0).map(([l,k])=>`<span style="background:var(--surface2);color:var(--ink2);font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600">${l}: ${n(r[k])}</span>`).join('')}</div>
+    <div class="dp-kpi" style="margin-top:8px">
+      <div class="dp-kc"><div class="dp-kl">NPS Promoter</div><div class="dp-kv" style="color:var(--green)">${n(r.nps_promoter)}</div></div>
+      <div class="dp-kc"><div class="dp-kl">Total Issues</div><div class="dp-kv" style="color:var(--red)">${issuesCount(r)}</div></div>
+      <div class="dp-kc"><div class="dp-kl">Dapat JO</div><div class="dp-kv" style="color:var(--stamp)">${n(r.total_dapat_jo)}</div></div>
+      <div class="dp-kc"><div class="dp-kl">Avg Rating</div><div class="dp-kv">${sc(r.avg_session_rating)}</div></div>
+    </div>
+    </div>`;
+  document.getElementById('detailOverlay').style.display='flex';
+}
+
+// ── STUDENT ───────────────────────────────────────────────────────────────────
+function renderStudent(){
+  const f=filters.student;
+  const data=DATA.student.filter(r=>{
+    if(f.search&&!(displayName(r)).toLowerCase().includes(f.search.toLowerCase())) return false;
+    if(f.program&&!matchFilter(r.program,f.program)) return false;
+    if(f.batch&&!matchFilter(r.batch,f.batch)) return false;
+    if(f.tier&&r.tier!==f.tier) return false;
+    if(f.jo&&r.jo_flag!==f.jo) return false;
+    if(f.statusKelulusan&&r.status_kelulusan!==f.statusKelulusan) return false;
+    if(f.event&&!(r.list_sesi||'').includes(f.event)) return false;
+    return true;
+  });
+
+  setSidebar(buildFilters({search:true,program:true,batch:true,event:true,tier:true,jo:true,statusKelulusan:true},'student')+`
+    <div class="divider"></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-v">${data.length.toLocaleString('id')}</div><div class="stat-l">Student</div></div>
+      <div class="stat-card"><div class="stat-v">${data.filter(r=>r.jo_flag==='Dapat JO').length}</div><div class="stat-l">Dapat JO</div></div>
+      <div class="stat-card"><div class="stat-v">${avg(data,'pct_kehadiran').toFixed(0)}%</div><div class="stat-l">Avg Hadir</div></div>
+      <div class="stat-card"><div class="stat-v">${data.reduce((s,r)=>s+issuesCount(r),0)}</div><div class="stat-l">Issues</div></div>
+    </div>`);
+
+  if(!data.length){setMain('<div class="empty">Tidak ada data student.</div>');return;}
+
+  const avgH=avg(data,'pct_kehadiran');
+  const avgN=avg(data,'avg_nilai_akumulasi');
+  const avgNAus=avg(data.filter(r=>/ausbildung/i.test(r.program||'')),'avg_nilai_akumulasi_ausbildung');
+  const avgNTok=avg(data.filter(r=>/tokutei/i.test(r.program||'')),'avg_nilai_akumulasi_tokutei');
+  const totJO=data.filter(r=>r.jo_flag==='Dapat JO').length;
+
+  const jumlahDetractor=data.reduce((s,r)=>s+n(r.jumlah_nps_detractor),0);
+  const jumlahRatingRendah=data.reduce((s,r)=>s+n(r.jumlah_rating_rendah),0);
+  const jumlahComplaint=data.reduce((s,r)=>s+n(r.jumlah_complaint),0);
+
+  const kpi=`<div class="kpi-row">
+    <div class="kpi"><div class="kpi-l">Total Student</div><div class="kpi-v">${data.length.toLocaleString('id')}</div></div>
+    <div class="kpi"><div class="kpi-l">Avg Kehadiran</div><div class="kpi-v">${avgH.toFixed(1)}%</div><div class="kpi-s">Rata-rata semua student</div><div class="kpi-bar"><div class="kpi-fill" style="width:${avgH}%"></div></div></div>
+    <div class="kpi"><div class="kpi-l">Avg Nilai</div><div class="kpi-v">${avgN.toFixed(1)}</div><div style="display:flex;gap:10px;margin-top:4px">
+      <div style="font-size:10px;color:var(--ink3)">Aus: <b style="color:var(--ink2)">${avgNAus>0?avgNAus.toFixed(1):'—'}</b></div>
+      <div style="font-size:10px;color:var(--ink3)">Tok: <b style="color:var(--ink2)">${avgNTok>0?avgNTok.toFixed(1):'—'}</b></div>
+    </div></div>
+    <div class="kpi"><div class="kpi-l">Job Offer</div><div class="kpi-v">${totJO}</div><div class="kpi-s">${data.length>0?(totJO/data.length*100).toFixed(1)+'%':''} dari total</div></div>
+    <div class="kpi"><div class="kpi-l">Feedback Perlu Perhatian</div><div style="display:flex;gap:10px;margin-top:2px">
+      <div><div class="kpi-v" style="font-size:18px;color:var(--red)">${jumlahDetractor}</div><div style="font-size:9px;color:var(--ink3)">Detractor</div></div>
+      <div><div class="kpi-v" style="font-size:18px;color:var(--amber)">${jumlahRatingRendah}</div><div style="font-size:9px;color:var(--ink3)">Rating Rendah</div></div>
+      <div><div class="kpi-v" style="font-size:18px;color:var(--red)">${jumlahComplaint}</div><div style="font-size:9px;color:var(--ink3)">Complaint</div></div>
+    </div></div>
+  </div>`;
+
+  const chartDataS=data.filter(r=>isDuringProgramBatch(r.batch)); // sembunyikan post-program dari chart visual
+
+  const charts=`<div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Distribusi Tier</div>${barChart(['1 - Excellent','2 - Good','3 - Need Improvement','4 - At-Risk','5 - Critical'].map(t=>({l:t.replace(/^\d - /,''),v:data.filter(r=>r.tier===t).length})),'var(--stamp)')}</div>
+    <div class="chart-card"><div class="chart-title">Top 5 Batch (Student)</div>${barChart(Object.entries(chartDataS.reduce((acc,r)=>{acc[r.batch||'?']=(acc[r.batch||'?']||0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([l,v])=>({l:l,v})))}</div>
+    <div class="chart-card"><div class="chart-title">NPS per Form <span style="color:var(--ink3);font-weight:400">(stacked: Promoter/Passive/Detractor)</span></div>${(()=>{
+      const formData=[1,2,3,4,5,6,7].map(fn=>({
+        l:'Form #'+fn,
+        segments:[
+          {v:data.reduce((s,r)=>s+n(r['form'+fn+'_promoter']),0),  color:'var(--green)', label:'Promoter'},
+          {v:data.reduce((s,r)=>s+n(r['form'+fn+'_passive']),0),   color:'var(--amber)', label:'Passive'},
+          {v:data.reduce((s,r)=>s+n(r['form'+fn+'_detractor']),0), color:'var(--red)',   label:'Detractor'},
+        ]
+      })).filter(item=>item.segments.reduce((s,seg)=>s+seg.v,0)>0);
+      return formData.length?stackedBarChart(formData):'<div style="font-size:11px;color:var(--ink3);padding:8px 0">Data belum tersedia — pastikan Sheets sudah di-refresh dari query terbaru (kolom form1_promoter dst)</div>';
+    })()}</div>
+  </div>`;
+
+  // ── Tren Tier vs Performa: tabel ringkasan + bar chart per tier ──
+  const tierOrder=['1 - Excellent','2 - Good','3 - Need Improvement','4 - At-Risk','5 - Critical'];
+  const tierStats=tierOrder.map(t=>{
+    const rows=data.filter(r=>r.tier===t);
+    const jmlJO=rows.filter(r=>r.jo_flag==='Dapat JO').length;
+    return {
+      tier:t.replace(/^\d - /,''),
+      jumlah:rows.length,
+      avgHadir:rows.length?avg(rows,'pct_kehadiran'):0,
+      avgNilai:rows.length?avg(rows,'avg_nilai_akumulasi'):0,
+      pctJO:rows.length?(jmlJO/rows.length*100):0,
+      jmlJO
+    };
+  }).filter(t=>t.jumlah>0);
+
+  const tierTrend=`<div class="chart-card" style="margin-top:16px">
+    <div class="chart-title">Tier vs Performa <span style="color:var(--ink3);font-weight:400">(kehadiran, nilai, status JO per tier)</span></div>
+    <table style="margin-top:8px">
+      <thead><tr>
+        <th>Tier</th><th>Jumlah</th><th>Avg Kehadiran</th><th>Avg Nilai</th><th>Dapat JO</th><th>% Dapat JO</th>
+      </tr></thead>
+      <tbody>
+        ${tierStats.map(t=>`<tr>
+          <td>${tierBadge(tierOrder.find(x=>x.includes(t.tier)))}</td>
+          <td class="mono">${t.jumlah}</td>
+          <td class="mono">${t.avgHadir.toFixed(1)}%</td>
+          <td class="mono">${t.avgNilai>0?t.avgNilai.toFixed(1):'—'}</td>
+          <td class="mono">${t.jmlJO}</td>
+          <td class="mono" style="color:${t.pctJO>=20?'var(--green)':'var(--ink2)'}">${t.pctJO.toFixed(1)}%</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="charts-row" style="margin-top:14px">
+      <div class="chart-card" style="background:var(--surface2)"><div class="chart-title" style="font-size:11px">Avg Kehadiran per Tier</div>${barChart(tierStats.map(t=>({l:t.tier,v:Math.round(t.avgHadir*10)/10})))}</div>
+      <div class="chart-card" style="background:var(--surface2)"><div class="chart-title" style="font-size:11px">Avg Nilai per Tier</div>${barChart(tierStats.map(t=>({l:t.tier,v:Math.round(t.avgNilai*10)/10})),'var(--teal)')}</div>
+      <div class="chart-card" style="background:var(--surface2)"><div class="chart-title" style="font-size:11px">% Dapat JO per Tier</div>${barChart(tierStats.map(t=>({l:t.tier,v:Math.round(t.pctJO*10)/10})),'var(--green)')}</div>
+    </div>
+  </div>`;
+
+  // Display semua data (limit 2000 untuk performa)
+  const LIMIT=2000;
+  const displayed=data.slice(0,LIMIT);
+  const rows=displayed.map(r=>`<tr onclick="openStudentDetail(${DATA.student.indexOf(r)})">
+    <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis">${displayName(r)}</td>
+    <td style="color:var(--ink2);max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${r.batch||''}">${(r.batch||'—').substring(0,22)}${(r.batch||'').length>22?'…':''}</td>
+    <td style="color:var(--ink2)">${r.program||'—'}</td>
+    <td>${r.regional||'—'}</td>
+    <td>${pctBar(r.pct_kehadiran)}</td>
+    <td class="mono">${r.avg_nilai_akumulasi?sc(r.avg_nilai_akumulasi):'—'}</td>
+    <td>${tierBadge(r.tier)}</td>
+    <td>${npsBadge(r.nps_status_terakhir)}</td>
+    <td class="mono" style="color:${issuesCount(r)>0?'var(--red)':'var(--ink3)'}">${issuesCount(r)||'0'}</td>
+    <td>${joBadge(r.jo_flag)}</td>
+    <td style="text-align:center" class="mono">${n(r.jumlah_1on1_interview)||'—'}</td>
+    <td style="text-align:center" class="mono">${n(r.jumlah_docrev)||'—'}</td>
+    <td>${lpBadge(r)}</td>
+  </tr>`).join('');
+
+  setMain(kpi+charts+tierTrend+`<div class="tcard" style="margin-top:16px"><div class="thead-row"><span class="ttitle">Daftar Student</span><span class="tcnt">${data.length.toLocaleString('id')} student${data.length>LIMIT?' ('+LIMIT+' pertama — gunakan filter)':''}</span></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Nama</th><th>Batch</th><th>Program</th><th>Regional</th>
+      <th>Kehadiran</th><th>Avg Nilai</th><th>Tier</th><th>NPS</th><th>Issues</th><th>JO</th>
+      <th title="Jumlah 1on1 Interview">1on1</th><th title="Jumlah Document Review">Doc.Rev</th><th>Learning Plan</th>
+    </tr></thead><tbody>${rows}</tbody></table></div></div>`);
+}
+
+function openStudentDetail(i){
+  const r=DATA.student[i];if(!r)return;
+  const aus=n(r.avg_mid_a1)>0||n(r.avg_final_a1)>0;
+  const tok=n(r.avg_mid_n5)>0||n(r.avg_final_n5)>0;
+  const scoreRows=(pairs)=>pairs.filter(([l,k])=>n(r[k])>0).map(([l,k])=>`<div class="sc-row"><span class="sc-key">${l}</span><div class="sc-bg"><div class="sc-fill" style="width:${Math.min(n(r[k]),100)}%"></div></div><span class="sc-num">${n(r[k]).toFixed(1)}</span></div>`).join('');
+  const logbooks=(r.list_sesi||'').split('|').map(s=>s.trim()).filter(Boolean);
+  document.getElementById('detailPanel').innerHTML=`
+    <div class="dp-pass-header">
+      <div class="dp-eyebrow">Student Passport</div>
+      <div class="dp-name">${displayName(r)}</div>
+      <div class="dp-meta">${r.student_email||''}</div>
+      <div class="dp-meta" style="margin-top:2px">${r.batch||'—'} · ${r.program||'—'} · ${r.regional||'—'}</div>
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-body">
+    ${n(r.jumlah_jo)>0?`<div style="background:var(--stamp-bg);border:1px solid #E8B6A4;border-radius:9px;padding:9px 12px;font-size:12px;color:var(--stamp-dk);font-weight:500">Job Offer: <b>${r.jumlah_jo}x apply</b>${r.status_student?' · '+r.status_student:''}</div>`:
+    `<div style="background:var(--gray-bg);border-radius:9px;padding:9px 12px;font-size:11px;color:var(--gray-dk)">Belum JO${r.status_student?' · Status: '+r.status_student:''}</div>`}
+    <div style="font-size:11px;color:var(--ink3)">Status Kelulusan: <b style="color:var(--ink)">${r.status_kelulusan||'—'}</b></div>
+    <div class="dp-kpi">
+      <div class="dp-kc"><div class="dp-kl">Kehadiran</div><div class="dp-kv">${sc(r.pct_kehadiran)}%</div><div style="font-size:10px;color:var(--ink3)">${r.student_hadir||0} dari ${r.jumlah_sesi_terlaksana||'?'} sesi</div></div>
+      <div class="dp-kc"><div class="dp-kl">Avg Nilai</div><div class="dp-kv" style="color:var(--teal)">${sc(r.avg_nilai_akumulasi)}</div><div style="margin-top:3px">${tierBadge(r.tier)}</div></div>
+    </div>
+
+    <div class="dp-sec">Persiapan Kerja</div>
+    <div class="trio-row">
+      <div class="trio-card"><div class="trio-v">${n(r.jumlah_1on1_interview)}</div><div class="trio-l">1on1 Interview</div></div>
+      <div class="trio-card"><div class="trio-v">${n(r.jumlah_docrev)}</div><div class="trio-l">Document Review</div></div>
+    </div>
+    ${(()=>{
+      const embedUrl=driveEmbedUrl(r.learning_plan_url);
+      if(!embedUrl) return '<div class="doc-empty">Learning plan belum dibuat untuk student ini</div>';
+      return `<button type="button" class="doc-link" onclick="toggleDocEmbed(this,'${embedUrl}')">
+        <div class="doc-link-icon">PDF</div>
+        <div style="overflow:hidden;text-align:left">
+          <div class="doc-link-text">Learning Plan</div>
+          <div class="doc-link-sub">Tampilkan dokumen ▾</div>
+        </div>
+      </button>
+      <div class="doc-embed-slot"></div>`;
+    })()}
+
+    ${n(r.jumlah_jo)>0?`<div style="display:flex;flex-direction:column;gap:5px">
+      <div class="fb-toggle" onclick="toggleFb(this)" style="cursor:pointer;background:var(--surface2);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:600">Job Offer — riwayat lengkap</span>
+        <span class="mono" style="font-size:11px;color:var(--ink2)">${r.jumlah_jo} apply ▾</span>
+      </div>
+      <div class="fb-content" style="display:none;padding-left:4px">
+        ${(r.jo_status_pairs||'').split('|').map(s=>s.trim()).filter(Boolean).map(s=>{
+          const [d,st]=s.split('::');
+          return `<div class="logbook-item" style="border-left:3px solid var(--teal)"><div style="font-size:9px;color:var(--ink3);margin-bottom:2px">${d||'Tanggal tidak tercatat'}</div>${st||'<span style="color:var(--ink3)">Status tidak tercatat</span>'}</div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+    <div class="dp-sec" style="margin-top:4px">Feedback &amp; NPS</div>
+    <div class="dp-kpi">
+      <div class="dp-kc"><div class="dp-kl">Avg Session Rating</div><div class="dp-kv">${r.avg_session_rating||'—'}</div><div style="font-size:10px;color:var(--ink3)">dari ${r.total_session_rating||0} rating</div></div>
+      <div class="dp-kc"><div class="dp-kl">NPS Terakhir</div><div style="margin-top:6px">${npsBadge(r.nps_status_terakhir)}</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <div class="fb-toggle" onclick="toggleFb(this)" style="cursor:pointer;background:var(--surface2);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:600">NPS — riwayat lengkap</span>
+        <span class="mono" style="font-size:11px;color:var(--ink2)">${r.total_nps||0} survey ▾</span>
+      </div>
+      <div class="fb-content" style="display:none;padding-left:4px">
+        ${parseDetailList(r.detail_nps_history).length?parseDetailList(r.detail_nps_history).map(d=>`<div class="logbook-item" style="border-left:3px solid ${d.content.startsWith('Detractor')?'var(--red)':d.content.startsWith('Passive')?'var(--amber)':'var(--green)'}"><div style="font-size:9px;color:var(--ink3);margin-bottom:2px">${d.date}</div>${d.content}</div>`).join(''):
+        '<div style="font-size:11px;color:var(--ink3);padding:6px">Belum ada survey NPS</div>'}
+      </div>
+
+      <div class="fb-toggle" onclick="toggleFb(this)" style="cursor:pointer;background:var(--surface2);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:600">Session Rating Rendah <span style="color:var(--ink3)">(≤2 dari 5)</span></span>
+        <span class="mono" style="font-size:11px;color:${n(r.jumlah_rating_rendah)>0?'var(--amber)':'var(--ink3)'}">${n(r.jumlah_rating_rendah)} ▾</span>
+      </div>
+      <div class="fb-content" style="display:none;padding-left:4px">
+        ${parseDetailList(r.detail_rating_rendah).length?parseDetailList(r.detail_rating_rendah).map(d=>`<div class="logbook-item" style="border-left:3px solid var(--amber)"><div style="font-size:9px;color:var(--ink3);margin-bottom:2px">${d.date}</div>${d.content}</div>`).join(''):
+        n(r.jumlah_rating_rendah)>0?`<div style="font-size:11px;color:var(--ink3);padding:6px">${n(r.jumlah_rating_rendah)} rating rendah tercatat, namun tidak ada catatan teks</div>`:
+        '<div style="font-size:11px;color:var(--ink3);padding:6px">Tidak ada rating rendah</div>'}
+      </div>
+
+      <div class="fb-toggle" onclick="toggleFb(this)" style="cursor:pointer;background:var(--surface2);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:600">Complaint</span>
+        <span class="mono" style="font-size:11px;color:${n(r.jumlah_complaint)>0?'var(--red)':'var(--ink3)'}">${n(r.jumlah_complaint)} ▾</span>
+      </div>
+      <div class="fb-content" style="display:none;padding-left:4px">
+        ${parseDetailList(r.detail_complaint).length?parseDetailList(r.detail_complaint).map(d=>`<div class="logbook-item" style="border-left:3px solid var(--red)"><div style="font-size:9px;color:var(--ink3);margin-bottom:2px">${d.date}</div>${d.content}</div>`).join(''):
+        n(r.jumlah_complaint)>0?`<div style="font-size:11px;color:var(--ink3);padding:6px">${n(r.jumlah_complaint)} complaint tercatat, namun tidak ada catatan teks (kualitatif_feedback kosong di source)</div>`:
+        '<div style="font-size:11px;color:var(--ink3);padding:6px">Tidak ada complaint</div>'}
+      </div>
+    </div>
+    ${aus?`<div class="dp-sec">Nilai Ausbildung</div>${scoreRows([['Mid A1','avg_mid_a1'],['Final A1','avg_final_a1'],['Mid A2','avg_mid_a2'],['Final A2','avg_final_a2'],['Mid B1','avg_mid_b1'],['Final B1','avg_final_b1']])}`:
+     tok?`<div class="dp-sec">Nilai Tokutei</div>${scoreRows([['Mid N5','avg_mid_n5'],['Final N5','avg_final_n5'],['Mid N4','avg_mid_n4'],['Final N4','avg_final_n4']])}`:
+     '<div style="font-size:11px;color:var(--ink3);text-align:center;padding:10px">Data nilai belum tersedia</div>'}
+    <div class="dp-sec" style="margin-top:6px">Logbook Aktivitas${r.total_sesi_diikuti?' ('+r.total_sesi_diikuti+' sesi)':''}</div>
+    ${logbooks.length?logbooks.slice(0,15).map(s=>`<div class="logbook-item">${s}</div>`).join('')+(logbooks.length>15?`<div style="font-size:10px;color:var(--ink3);text-align:center">+${logbooks.length-15} sesi lainnya</div>`:''):
+    '<div style="font-size:11px;color:var(--ink3);text-align:center;padding:10px">Belum ada data logbook</div>'}
+    </div>`;
+  document.getElementById('detailOverlay').style.display='flex';
+}
+
+// Parse format "tanggal||isi ~~~ tanggal||isi ~~~ ..." dari query BQ jadi array {date, content}
+function parseDetailList(raw){
+  if(!raw) return [];
+  const items=raw.split('~~~').map(s=>s.trim()).filter(Boolean).map(s=>{
+    const idx=s.indexOf('||');
+    if(idx===-1) return {date:'',content:s};
+    return {date:s.substring(0,idx),content:s.substring(idx+2)};
+  });
+  // Safety net: dedup berdasarkan date+content gabungan, jaga-jaga ada duplikat lolos dari query
+  const seen=new Set();
+  const deduped=items.filter(it=>{
+    const key=it.date+'||'+it.content;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return deduped.sort((a,b)=>b.date.localeCompare(a.date));
+}
+function toggleFb(el){
+  const content=el.nextElementSibling;
+  const arrow=el.querySelector('span:last-child');
+  const isOpen=content.style.display==='block';
+  content.style.display=isOpen?'none':'block';
+  if(arrow) arrow.textContent=arrow.textContent.replace(isOpen?'▴':'▾',isOpen?'▾':'▴');
+}
+// Toggle embed PDF learning plan inline di panel detail.
+// PENTING: jangan pakai loading="lazy" di sini — Chrome menganggap iframe yang baru
+// di-inject ke DOM (atau berada di overlay yang baru muncul) sebagai "hidden" sesaat,
+// sehingga src tidak langsung di-assign dan .src terbaca undefined dari luar.
+// width/height eksplisit + tanpa lazy memastikan src langsung di-fetch begitu di-set.
+function toggleDocEmbed(btn,embedUrl){
+  const slot=btn.nextElementSibling;
+  const sub=btn.querySelector('.doc-link-sub');
+  const isOpen=slot.classList.contains('open');
+  if(isOpen){
+    slot.classList.remove('open');
+    slot.innerHTML='';
+    if(sub) sub.textContent='Tampilkan dokumen ▾';
+  }else{
+    slot.classList.add('open');
+    const iframe=document.createElement('iframe');
+    iframe.width='100%';
+    iframe.height='360';
+    iframe.style.border='none';
+    iframe.style.display='block';
+    iframe.allow='autoplay';
+    const wrap=document.createElement('div');
+    wrap.className='doc-embed-wrap';
+    wrap.appendChild(iframe);
+    slot.appendChild(wrap);
+    // Set src setelah elemen sudah terpasang di DOM dengan ukuran final,
+    // supaya Chrome tidak mengevaluasinya sebagai hidden/zero-size iframe.
+    iframe.src=embedUrl;
+    if(sub) sub.textContent='Sembunyikan dokumen ▴';
+  }
+}
+function closeDetail(){document.getElementById('detailOverlay').style.display='none';}
+</script>
+</body>
+</html>
